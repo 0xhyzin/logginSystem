@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userid      Int         @id @default(autoincrement())
+  firstname   String      @db.VarChar(50)
+  secoundname String      @db.VarChar(50)
+  email       String      @unique @db.VarChar(100)
+  phone       String      @unique @db.VarChar(100)
+  userrole    userrole[]
+  usertoken   usertoken[]
+}
+
+model roletype {
+  roletypeid Int        @id @default(autoincrement())
+  rolename   String?    @db.VarChar(20)
+  userrole   userrole[]
+}
+
+model tokentype {
+  tokentypeid Int         @id @default(autoincrement())
+  tokenname   String?     @db.VarChar(50)
+  usertoken   usertoken[]
+}
+
+model userrole {
+  roleid     Int       @id @default(autoincrement())
+  roletypeid Int?
+  userid     Int?
+  roletype   roletype? @relation(fields: [roletypeid], references: [roletypeid], onDelete: NoAction, onUpdate: NoAction)
+  User       User?     @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model usertoken {
+  tokenid     Int        @id @default(autoincrement())
+  token       String     @unique
+  createdate  DateTime?  @default(now()) @db.Timestamp(6)
+  expiredate  DateTime?  @db.Timestamp(6)
+  isused      Boolean?   @default(false)
+  userid      Int?
+  tokentypeid Int?
+  tokentype   tokentype? @relation(fields: [tokentypeid], references: [tokentypeid], onDelete: NoAction, onUpdate: NoAction)
+  User        User?      @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction)
+}
