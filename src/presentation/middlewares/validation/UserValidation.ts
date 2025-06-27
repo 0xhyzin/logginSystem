@@ -1,12 +1,7 @@
+import { NextFunction, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
-/**
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- */
-
-
-export const ValidationCreateUser = (req, res, next) => {
+export const ValidationCreateUser = (req :Request, res :Response , next:NextFunction ) => {
     body("firstName")
         .notEmpty()
         .isAlpha()
@@ -23,7 +18,6 @@ export const ValidationCreateUser = (req, res, next) => {
         .withMessage("email is required")
     body("phone")
         .notEmpty()
-        .isMobilePhone()
         .withMessage("Secound name is phone")
         .withMessage("Phone number is invalid");
     body("password")
@@ -43,7 +37,8 @@ export const ValidationCreateUser = (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        res.status(400).json({ errors: errors.array() });
+        return;
     }
 
     next();
