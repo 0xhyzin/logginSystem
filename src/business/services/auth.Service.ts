@@ -10,7 +10,7 @@ dotenv.config();
 
 export const CreateTokenToUser =async (user: User) => {
     const secrets: jwt.Secret = process.env.TOKEN_SECRET || ""
-    const expiresDate = process.env.TOKEN_EXPIRESIN || "15m"
+    const expiresDate = process.env.TOKEN_EXPIRESIN || "11m"
     const paylod: object | string = {
         id: user.userid,
         fullName: `${user.firstname} ${user.secoundname}`,
@@ -23,4 +23,6 @@ export const CreateTokenToUser =async (user: User) => {
     return jwt.sign(paylod, secrets, option)
 }
 
-export const CreateRefreshToken = crypto.randomBytes(64).toString("hex");
+export const CreateRefreshToken = (): string => {
+  return crypto.randomBytes(64).toString("hex");
+};

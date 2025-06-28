@@ -2,10 +2,10 @@ import { Prisma, User } from '@prisma/client';
 import { prisma } from '../database/db.js'
 
 class UserRepositories {
-    public AddUserToDatabase =async (user : User) => {
-        let addUser:User ;
+    public AddUserToDatabase = async (user: User) => {
+        let addUser: User;
         try {
-            addUser =await prisma.user.create({
+            addUser = await prisma.user.create({
                 data: {
                     firstname: user.firstname,
                     secoundname: user.secoundname,
@@ -17,7 +17,7 @@ class UserRepositories {
             if (addUser === null) {
                 throw Error("Error When add User To database");
             }
-            const newUserRole =await prisma.userrole.create({
+            const newUserRole = await prisma.userrole.create({
                 data: {
                     roletypeid: 2,
                     userid: addUser.userid
@@ -33,12 +33,12 @@ class UserRepositories {
         return addUser;
 
     }
-    public AddRefreshTokenToUser =async (userId :number, refreshToken :string) => {
+    public AddRefreshTokenToUser = async (userId: number, refreshToken: string) => {
         const now = new Date();
         const expireDate = new Date(now);
-        expireDate.setMonth(expireDate.getMonth() + 1); 
+        expireDate.setMonth(expireDate.getMonth() + 1);
         try {
-            const token =await prisma.usertoken.create({
+            const token = await prisma.usertoken.create({
                 data: {
                     token: refreshToken,
                     tokentypeid: 1,
@@ -57,18 +57,74 @@ class UserRepositories {
         }
         return true;
     }
-    public GetUserRole =async (userId:number)=>{
+    public GetUserRole = async (userId: number) => {
         const roles = await prisma.userrole.findMany({
             where: { userid: userId },
-            include:{
-                roletype:{
-                    select:{
-                        rolename:true
+            include: {
+                roletype: {
+                    select: {
+                        rolename: true
                     }
                 }
             }
         })
-        return roles.map(role=>role.roletype?.rolename)
+        return roles.map(role => role.roletype?.rolename)
+    }
+
+    public GetUserByEmail = async (email: string) => {
+        let user;
+        try {
+            user = await prisma.user.findUnique({
+                where: {
+                    email: email
+                }
+            })
+            if (user === null) {
+                throw Error("Email not found")
+            }
+        } catch (er) {
+            console.log(er)
+            return null;
+        }
+        return user;
+    }
+    public GetUserByRefreshToken = async (refreshTocken: string) => {
+        let user;
+        try {
+            const tokenRecourd = await prisma.usertoken.findUnique({
+                where: {
+                    token: refreshTocken,
+                    isused: false,
+                    expiredate: {
+                        gt: new Date()
+                    }
+                },
+                include: {
+                    User: true
+                }
+            })
+            if (tokenRecourd === null) {
+                throw Error("Invalid or expired refresh token")
+            }
+            user = tokenRecourd?.User;
+
+        } catch (er) {
+            console.log(er)
+            return null;
+        }
+        return user;
+    }
+    public MakePrevRefreshTokenIsUsed = async (user: User) => {
+        try {
+            const tokenRecourd = await prisma.usertoken.deleteMany({
+                where: {
+                    userid: user.userid,
+                    tokentypeid: 1
+                },
+            })
+        } catch (er) {
+            console.log(er);
+        }
     }
 }
 export const userRepositories = new UserRepositories();

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import { body, validationResult } from "express-validator";
+import { body, cookie, validationResult } from "express-validator";
 
-export const ValidationCreateUser = (req :Request, res :Response , next:NextFunction ) => {
+export const ValidationCreateUser = (req: Request, res: Response, next: NextFunction) => {
     body("firstName")
         .notEmpty()
         .isAlpha()
@@ -43,3 +43,31 @@ export const ValidationCreateUser = (req :Request, res :Response , next:NextFunc
 
     next();
 }
+
+export const ValidationLoginUser = (req: Request, res: Response, next: NextFunction) => {
+
+    body("email")
+        .notEmpty()
+        .isEmail()
+        .withMessage("email is required")
+    body("password")
+        .isLength({ min: 6 })
+        .withMessage("Password is required")
+        .withMessage("Password must be at least 6 characters");
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
+
+    next();
+}
+
+export const ValidationrefReshTockenUser = (req: Request, res: Response, next: NextFunction) => {
+    if (req.cookies.refreshToken === null || req.cookies.refreshToken === "") {
+        res.status(400).json({ errors: "Refresh token is missing. Please login again." });
+    }
+    next()
+} 
