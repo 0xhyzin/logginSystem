@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  userid      Int         @id @default(autoincrement())
-  firstname   String      @db.VarChar(50)
-  secoundname String      @db.VarChar(50)
-  email       String      @unique @db.VarChar(100)
-  hashPassword String     @db.VarChar(250)
-  phone       String      @unique @db.VarChar(100)
-  userrole    userrole[]
-  usertoken   usertoken[]
+  userid       Int         @id @default(autoincrement())
+  firstname    String      @db.VarChar(50)
+  secoundname  String      @db.VarChar(50)
+  email        String      @unique @db.VarChar(100)
+  isactive     Boolean?    @default(false)
+  phone        String      @unique @db.VarChar(100)
+  hashPassword String      @db.VarChar(250)
+  userrole     userrole[]
+  usertoken    usertoken[]
 }
 
 model roletype {

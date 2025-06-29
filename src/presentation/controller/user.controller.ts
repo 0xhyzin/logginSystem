@@ -56,6 +56,30 @@ export const RefreshAuth = async (req: Request, res: Response) => {
     }
     res.status(200).send({ message: response.message, user: response.dto })
 }
+
+export const SendConfirmEmailToken = async (req: Request, res: Response) => {
+    const email = req.body.email;
+    const response: ServicesHandler<boolean> = await userServices.SendConfirmTokenToEmail(email);
+
+    if (!response.dto) {
+        res.status(404).send({ message: response.message, statusCode: 404 });
+    }
+    res.status(200).send({ message: response.message, user: response.dto })
+}
+
+export const CheckConfirmEmailCode = async (req: Request, res: Response) => {
+    const otpCode: number = Number(req.body.otpCode);
+    const email = req.body.email;
+
+    const response = await userServices.CheckOtpCode(otpCode,email);
+
+    if (!response.dto) {
+        res.status(404).send({ message: response.message, statusCode: 404 });
+    }
+    res.status(200).send({ message: response.message, user: response.dto })
+
+}
+
 export const UpdateUser = (req: Request, res: Response) => {
 
 }

@@ -1,5 +1,6 @@
-import { Prisma, User } from '@prisma/client';
+import { Prisma, User, usertoken } from '@prisma/client';
 import { prisma } from '../database/db.js'
+import { generateOTP } from '../utilities/helpers.js';
 
 class UserRepositories {
     public AddUserToDatabase = async (user: User) => {
@@ -125,6 +126,61 @@ class UserRepositories {
         } catch (er) {
             console.log(er);
         }
+    }
+    public GetConfirmEmailToken = async (email: string) => {
+        const now = new Date();
+        const expireDate = new Date(now);
+        expireDate.setMonth(expireDate.getMinutes() + 10);
+        const user: User | null = await this.GetUserByEmail(email);
+        if (user === null) {
+            return null;
+        }
+        let otpToken;
+        try {
+            const tokenNumber: usertoken = await prisma.usertoken.create({
+                data: {
+                    token: generateOTP(),
+                    createdate: now,
+                    expiredate: expireDate,
+                    tokentypeid: 2,
+                    userid: user.userid,
+                    isused: false
+                }
+            })
+            otpToken = tokenNumber.token;
+        } catch (er) {
+            console.log(er);
+            return 0;
+        }
+        return Number(otpToken);
+    }
+    public CheckOtpCodeForUser = async (otpCode: Number, user: User) => {
+        try {
+            const userOtp = await prisma.usertoken.findUnique({
+                where: {
+                    token: otpCode.toString(),
+                    isused: false,
+                    expiredate: {
+                        gt: new Date()
+                    }
+                }
+            })
+            if(userOtp ===null){
+                throw Error ("Token Not Found")
+            }
+        }catch(er){
+            console.log(er);
+            return false;
+        }
+        await prisma.user.update({
+            where:{
+                email:user.email,
+            },
+            data:{
+                isactive:true
+            }
+        })
+        return true;
     }
 }
 export const userRepositories = new UserRepositories();
