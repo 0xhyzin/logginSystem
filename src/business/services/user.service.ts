@@ -69,7 +69,7 @@ class UserServices {
             return handler;
         }
         if (!user.isactive) {
-            handler.message = "Confirm Email First (check Your Email)";
+            handler.message = "Confirm Email First";
             handler.isSuccss = false;
             handler.dto = null;
             handler.refreshToken = null
@@ -133,6 +133,21 @@ class UserServices {
     }
     public SendConfirmTokenToEmail = async (email: string) => {
         const handler: ServicesHandler<boolean> = new ServicesHandler();
+        const user: User | null = await userRepositories.GetUserByEmail(email);
+        if (user === null) {
+            handler.message = "user Not Found";
+            handler.isSuccss = false;
+            handler.dto = null;
+            handler.refreshToken = null
+            return handler;
+        }
+        if (user.isactive) {
+            handler.message = "Email is already confirmed";
+            handler.isSuccss = false;
+            handler.dto = null;
+            handler.refreshToken = null
+            return handler;
+        }
 
         const token: number | null = await userRepositories.GetConfirmEmailToken(email);
         if (token === 0) {

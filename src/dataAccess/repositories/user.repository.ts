@@ -130,7 +130,7 @@ class UserRepositories {
     public GetConfirmEmailToken = async (email: string) => {
         const now = new Date();
         const expireDate = new Date(now);
-        expireDate.setMonth(expireDate.getMinutes() + 10);
+        expireDate.setMinutes(expireDate.getMinutes() + 10);
         const user: User | null = await this.GetUserByEmail(email);
         if (user === null) {
             return null;
@@ -155,8 +155,9 @@ class UserRepositories {
         return Number(otpToken);
     }
     public CheckOtpCodeForUser = async (otpCode: Number, user: User) => {
+        let userOtp;
         try {
-            const userOtp = await prisma.usertoken.findUnique({
+            userOtp = await prisma.usertoken.findUnique({
                 where: {
                     token: otpCode.toString(),
                     isused: false,
@@ -165,19 +166,25 @@ class UserRepositories {
                     }
                 }
             })
-            if(userOtp ===null){
-                throw Error ("Token Not Found")
+            if (userOtp === null) {
+                throw Error("Token Not Found")
             }
-        }catch(er){
+        } catch (er) {
             console.log(er);
             return false;
         }
+
+        await prisma.usertoken.delete({
+            where: {
+                tokenid: userOtp.tokenid
+            }
+        })
         await prisma.user.update({
-            where:{
-                email:user.email,
+            where: {
+                email: user.email,
             },
-            data:{
-                isactive:true
+            data: {
+                isactive: true
             }
         })
         return true;
