@@ -79,10 +79,3 @@ export const CheckConfirmEmailCode = async (req: Request, res: Response) => {
     res.status(200).send({ message: response.message, user: response.dto })
 
 }
-
-export const UpdateUser = (req: Request, res: Response) => {
-
-}
-export const DeleteUser = (req: Request, res: Response) => {
-
-}
